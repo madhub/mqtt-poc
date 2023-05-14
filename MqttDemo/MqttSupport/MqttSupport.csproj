@@ -15,4 +15,10 @@
 		<PackageReference Include="MQTTnet.Extensions.ManagedClient" Version="4.2.0.706" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="readme.md">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
