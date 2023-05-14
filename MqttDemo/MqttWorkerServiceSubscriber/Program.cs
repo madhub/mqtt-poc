@@ -11,13 +11,10 @@ IHost host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostCtx, services) =>
     {
-        ITopicSubscriptionBuilder topicSubscriptionBuilder = services.AddMqttSupport(hostCtx.Configuration);
-        // subscribe to config change
-        topicSubscriptionBuilder.AddTopicSubscription<NotifyTopicProcessor>("msdemo/events/notify/configchange");
-        // subscribe to ping
-        topicSubscriptionBuilder.AddTopicSubscription<PingTopicProcessor>("msdemo/events/command/ping");
-        // subscribe to all events
-        topicSubscriptionBuilder.AddTopicSubscription<AllTopicProcessor>("msdemo/events/#");
+        services.AddMqttSupport(hostCtx.Configuration)
+        .AddTopicSubscription<NotifyTopicProcessor>("msdemo/events/notify/configchange")   // subscribe to config change
+        .AddTopicSubscription<PingTopicProcessor>("msdemo/events/command/ping")  // subscribe to ping
+        .AddTopicSubscription<AllTopicProcessor>("msdemo/events/#"); // subscribe to all events
     })
     .Build();
 
