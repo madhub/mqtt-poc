@@ -17,7 +17,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         // subscribe to ping
         topicSubscriptionBuilder.AddTopicSubscription<PingTopicProcessor>("msdemo/events/command/ping");
         // subscribe to all events
-        topicSubscriptionBuilder.AddTopicSubscription<PingTopicProcessor>("msdemo/events/#");
+        topicSubscriptionBuilder.AddTopicSubscription<AllTopicProcessor>("msdemo/events/#");
     })
     .Build();
 

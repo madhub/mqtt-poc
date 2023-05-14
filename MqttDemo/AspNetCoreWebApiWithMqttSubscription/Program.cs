@@ -12,7 +12,7 @@ topicSubscriptionBuilder.AddTopicSubscription<NotifyTopicProcessor>("msdemo/even
 // subscribe to ping
 topicSubscriptionBuilder.AddTopicSubscription<PingTopicProcessor>("msdemo/events/command/ping");
 // subscribe to all events
-topicSubscriptionBuilder.AddTopicSubscription<PingTopicProcessor>("msdemo/events/#");
+topicSubscriptionBuilder.AddTopicSubscription<AllTopicProcessor>("msdemo/events/#");
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
