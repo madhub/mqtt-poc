@@ -10,7 +10,7 @@ namespace MqttSupport;
 /// <summary>
 /// Helper class to add topic subscription & processors
 /// </summary>
-public static class TopicSubscriptionBuilderAddCheckExtensions
+public static class TopicSubscriptionBuilderAddTopicSubscriptionExtensions
 {
     public static ITopicSubscriptionBuilder AddTopicSubscription<T>(this ITopicSubscriptionBuilder builder, string name) where T : class, ITopicProcessor
     {
