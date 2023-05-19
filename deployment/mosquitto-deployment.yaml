@@ -1,3 +1,4 @@
+# reference https://blogs.oracle.com/developers/post/install-and-run-mosquitto-on-a-kubernetes-cluster
 apiVersion: v1
 kind: List
 items:
@@ -37,27 +38,60 @@ items:
               cpu: "1"
           volumeMounts:
               - name: mosquitto-conf
-                mountPath: /mosquitto/config
+                mountPath: /mosquitto/config # for configuration
+              - name: mosquitto-persistent-storage
+                mountPath: /mosquitto/data # for data 
+              - name: mosquitto-pwd
+                mountPath: /etc/mosquitto/passwd # for data                 
+                subPath: passwd
+                readOnly: true
         volumes:
           - name: mosquitto-conf
             configMap:
                name: mosquitto-config-file
-          # volumeMounts:
-          #   - mountPath:  "/mosquitto"
-          #     name: mqttbroker-pv-storage
+          - name: mosquitto-pwd
+            configMap:
+               name:  mosquitto-password
+          - name:  mosquitto-persistent-storage
+            persistentVolumeClaim:
+              claimName: mq-pv-claim
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: mq-pv-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi          
+#    storageClassName: "hostpath" # omit storage class for dynamic provisioner default Persistant Volume on EKS
+
 - apiVersion: v1
   kind: ConfigMap
   metadata:
     name: mosquitto-config-file
   data:
     mosquitto.conf: |
+      persistence true
+      persistence_location /mosquitto/data/
       log_dest stdout
       log_type all
       log_timestamp true
       listener 80
       protocol websockets
-      allow_anonymous true
+      allow_anonymous false
+      password_file /etc/mosquitto/passwd
 
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: mosquitto-password
+  data:
+    passwd: |
+      mqttuser:$7$101$LasOFWmq28EZMcQR$T88g+1gOki5/xY5TLU4jb4Ez3gPhL4r2zAQBwgMB6QUvf+DDMW476/07W1RYCA9sNSU7rK1xfm21qVHtOxz/dA==
+      mqttuser1:$7$101$V21xVq9YrmsJVOes$2w8thliGZo5yhBEqEIR6zF1nNkwtwDyziVNAChwc+SFCfBizteMlpd4Epoy6agspqp1VTX9hYfVggWYhF7Z2WA==
+      madhub:$7$101$bWKJXDdzEgi3dlhL$vD4BUX+LTDRrfoMjupsGq1ncRS0qkaCwgYoHZD0KQMKj0nvGmR6J0xhsqITOCYAyLKUUM1ILZ7Zheoba5pAglw==
 # service
 - apiVersion: v1
   kind: Service
