@@ -1,0 +1,129 @@
+# reference https://blogs.oracle.com/developers/post/install-and-run-mosquitto-on-a-kubernetes-cluster
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: madhu-xplor
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: mqttbroker-deployment
+    namespace: madhu-xplor
+    labels:
+      app: mqttbroker
+  spec:
+    selector:
+      matchLabels:
+        app: mqttbroker
+    template:
+      metadata:
+        namespace: madhu-xplor
+        labels:
+          app: mqttbroker
+      spec:
+        containers:
+        - name: mqttbroker
+          image:  eclipse-mosquitto:latest
+          ports:
+          - containerPort: 80
+          imagePullPolicy: Never
+          resources:
+            requests:
+              memory: "512M"
+              cpu: "0.5"
+            limits:
+              memory: "1G"
+              cpu: "1"
+          volumeMounts:
+              - name: mosquitto-conf
+                mountPath: /mosquitto/config # for configuration
+#              - name: mosquitto-persistent-storage
+#                mountPath: /mosquitto/data # for data 
+              - name: mosquitto-pwd
+                mountPath: /etc/mosquitto/passwd # for data                 
+                subPath: passwd
+                readOnly: true
+        volumes:
+          - name: mosquitto-conf
+            configMap:
+               name: mosquitto-config-cm
+          - name: mosquitto-pwd
+            configMap:
+               name:  mosquitto-password-cm
+#          - name:  mosquitto-persistent-storage
+#            persistentVolumeClaim:
+#              claimName: mq-pv-claim
+# - apiVersion: v1
+#   kind: PersistentVolumeClaim
+#   metadata:
+#     name: mq-pv-claim
+#   spec:
+#     accessModes:
+#       - ReadWriteOnce
+#     resources:
+#       requests:
+#         storage: 2Gi          
+# #    storageClassName: "hostpath" # omit storage class for dynamic provisioner default Persistant Volume on EKS
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: mosquitto-config-cm
+    namespace: madhu-xplor
+  data:
+    mosquitto.conf: |
+      log_dest stdout
+      log_type information
+      log_timestamp true
+      listener 80
+      protocol websockets
+      allow_anonymous true
+      password_file /etc/mosquitto/passwd
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: mosquitto-password-cm
+    namespace: madhu-xplor
+  data:
+    passwd: |
+      mqttuser:$7$101$LasOFWmq28EZMcQR$T88g+1gOki5/xY5TLU4jb4Ez3gPhL4r2zAQBwgMB6QUvf+DDMW476/07W1RYCA9sNSU7rK1xfm21qVHtOxz/dA==
+      mqttuser1:$7$101$V21xVq9YrmsJVOes$2w8thliGZo5yhBEqEIR6zF1nNkwtwDyziVNAChwc+SFCfBizteMlpd4Epoy6agspqp1VTX9hYfVggWYhF7Z2WA==
+      madhub:$7$101$bWKJXDdzEgi3dlhL$vD4BUX+LTDRrfoMjupsGq1ncRS0qkaCwgYoHZD0KQMKj0nvGmR6J0xhsqITOCYAyLKUUM1ILZ7Zheoba5pAglw==
+# service
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: mqttbroker-service
+    namespace: madhu-xplor
+  spec:
+    selector:
+      app: mqttbroker
+    ports:
+      - name: websocket
+        port: 80 
+        targetPort: 80
+        protocol: TCP 
+# Ingress
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: mqttbroker-ingress
+    namespace: madhu-xplor
+  spec:
+   ingressClassName: nginx
+   rules:
+    - host: kubernetes.docker.internal
+      http:
+       paths:
+        - path: /mqtt
+          pathType: Prefix
+          backend:
+           service: 
+             name: mqttbroker-service
+             port:
+              number : 80
+
+        
