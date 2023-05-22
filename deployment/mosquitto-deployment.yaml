@@ -5,12 +5,12 @@ items:
 - apiVersion: v1
   kind: Namespace
   metadata:
-    name: demos
+    name: mqtt-xplor
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
     name: mqttbroker-deployment
-    namespace: demos
+    namespace: mqtt-xplor
     labels:
       app: mqttbroker
   spec:
@@ -19,7 +19,7 @@ items:
         app: mqttbroker
     template:
       metadata:
-        namespace: demos
+        namespace: mqtt-xplor
         labels:
           app: mqttbroker
       spec:
@@ -48,10 +48,10 @@ items:
         volumes:
           - name: mosquitto-conf
             configMap:
-               name: mosquitto-config-file
+               name: mosquitto-config-cm
           - name: mosquitto-pwd
             configMap:
-               name:  mosquitto-password
+               name:  mosquitto-password-cm
           - name:  mosquitto-persistent-storage
             persistentVolumeClaim:
               claimName: mq-pv-claim
@@ -59,6 +59,7 @@ items:
   kind: PersistentVolumeClaim
   metadata:
     name: mq-pv-claim
+    namespace: mqtt-xplor
   spec:
     accessModes:
       - ReadWriteOnce
@@ -70,13 +71,14 @@ items:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: mosquitto-config-file
+    name: mosquitto-config-cm
+    namespace: mqtt-xplor
   data:
     mosquitto.conf: |
       persistence true
       persistence_location /mosquitto/data/
       log_dest stdout
-      log_type all
+      log_type information
       log_timestamp true
       listener 80
       protocol websockets
@@ -86,7 +88,8 @@ items:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: mosquitto-password
+    name: mosquitto-password-cm
+    namespace: mqtt-xplor
   data:
     passwd: |
       mqttuser:$7$101$LasOFWmq28EZMcQR$T88g+1gOki5/xY5TLU4jb4Ez3gPhL4r2zAQBwgMB6QUvf+DDMW476/07W1RYCA9sNSU7rK1xfm21qVHtOxz/dA==
@@ -97,7 +100,7 @@ items:
   kind: Service
   metadata:
     name: mqttbroker-service
-    namespace: demos
+    namespace: mqtt-xplor
   spec:
     selector:
       app: mqttbroker
@@ -111,14 +114,14 @@ items:
   kind: Ingress
   metadata:
     name: mqttbroker-ingress
-    namespace: demos
+    namespace: mqtt-xplor
   spec:
    ingressClassName: nginx
    rules:
     - host: kubernetes.docker.internal
       http:
        paths:
-        - path: /
+        - path: /mqtt
           pathType: Prefix
           backend:
            service: 
