@@ -6,6 +6,32 @@ items:
   kind: Namespace
   metadata:
     name: madhu-xplor
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: mosquitto-config-cm
+    namespace: madhu-xplor
+  data:
+    mosquitto.conf: |
+      log_dest stdout
+      log_type information
+      log_timestamp true
+      listener 8080
+      protocol websockets
+      allow_anonymous true
+      password_file /etc/mosquitto/passwd
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: mosquitto-password-cm
+    namespace: madhu-xplor
+  data:
+    passwd: |
+      mqttuser:$7$101$LasOFWmq28EZMcQR$T88g+1gOki5/xY5TLU4jb4Ez3gPhL4r2zAQBwgMB6QUvf+DDMW476/07W1RYCA9sNSU7rK1xfm21qVHtOxz/dA==
+      mqttuser1:$7$101$V21xVq9YrmsJVOes$2w8thliGZo5yhBEqEIR6zF1nNkwtwDyziVNAChwc+SFCfBizteMlpd4Epoy6agspqp1VTX9hYfVggWYhF7Z2WA==
+      madhub:$7$101$bWKJXDdzEgi3dlhL$vD4BUX+LTDRrfoMjupsGq1ncRS0qkaCwgYoHZD0KQMKj0nvGmR6J0xhsqITOCYAyLKUUM1ILZ7Zheoba5pAglw==
+    
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -67,31 +93,6 @@ items:
 #         storage: 2Gi          
 # #    storageClassName: "hostpath" # omit storage class for dynamic provisioner default Persistant Volume on EKS
 
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: mosquitto-config-cm
-    namespace: madhu-xplor
-  data:
-    mosquitto.conf: |
-      log_dest stdout
-      log_type information
-      log_timestamp true
-      listener 8080
-      protocol websockets
-      allow_anonymous true
-      password_file /etc/mosquitto/passwd
-
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: mosquitto-password-cm
-    namespace: madhu-xplor
-  data:
-    passwd: |
-      mqttuser:$7$101$LasOFWmq28EZMcQR$T88g+1gOki5/xY5TLU4jb4Ez3gPhL4r2zAQBwgMB6QUvf+DDMW476/07W1RYCA9sNSU7rK1xfm21qVHtOxz/dA==
-      mqttuser1:$7$101$V21xVq9YrmsJVOes$2w8thliGZo5yhBEqEIR6zF1nNkwtwDyziVNAChwc+SFCfBizteMlpd4Epoy6agspqp1VTX9hYfVggWYhF7Z2WA==
-      madhub:$7$101$bWKJXDdzEgi3dlhL$vD4BUX+LTDRrfoMjupsGq1ncRS0qkaCwgYoHZD0KQMKj0nvGmR6J0xhsqITOCYAyLKUUM1ILZ7Zheoba5pAglw==
 # service
 - apiVersion: v1
   kind: Service
