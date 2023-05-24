@@ -27,7 +27,7 @@ items:
         - name: mqttbroker
           image:  eclipse-mosquitto:latest
           ports:
-          - containerPort: 80
+          - containerPort: 8080
           imagePullPolicy: Never
           resources:
             requests:
@@ -80,7 +80,7 @@ items:
       log_dest stdout
       log_type information
       log_timestamp true
-      listener 80
+      listener 8080
       protocol websockets
       allow_anonymous false
       password_file /etc/mosquitto/passwd
@@ -107,7 +107,7 @@ items:
     ports:
       - name: websocket
         port: 80 
-        targetPort: 80
+        targetPort: 8080
         protocol: TCP 
 # Ingress
 - apiVersion: networking.k8s.io/v1
